@@ -99,7 +99,7 @@ Python side needs `torch` (CPU is fine) for the metrics; `pip install torch data
 
 - One synthetic task family, n = 900 (300 per question type). Enough to place T far from 1; not enough for fine bin-level claims.
 - Public-benchmark contamination is unknowable; those rows are context, not evidence about generalisation.
-- `jev-latest` may move. The model version at run time is recorded in `results/`; re-run before quoting these numbers against a newer version.
+- The Gateway exposes no model version and `typesafe-ai/jev` may move silently. All numbers are from 2026-09-19; re-run before quoting them against a later date.
 - Calibration here is measured on Jev's returned probabilities as a user would consume them. It says nothing about the model's internal distribution before post-processing.
 
 ## License
