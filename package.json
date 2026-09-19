@@ -1,0 +1,12 @@
+{
+  "name": "jev-ood-calibration",
+  "private": true,
+  "type": "module",
+  "description": "Independent calibration test of TypeSafe's Jev via Vercel AI Gateway",
+  "scripts": {
+    "jev:synth": "node scripts/jev_eval.mjs --in data/val.jsonl --out results/jev_synth.jsonl --model typesafe-ai/jev --concurrency 8"
+  },
+  "dependencies": {
+    "ai": "^7.0.107"
+  }
+}
