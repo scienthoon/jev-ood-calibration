@@ -41,11 +41,11 @@ TypeSafe also returns a separate `confidence` statistic. Read as a probability o
 
 ### Relation to other independent measurements
 
-This is not the first independent calibration test. The [jev-exploration ledger](https://github.com/SamuelSacco/jev-exploration) audits the public ones:
+This is not the first independent calibration test. The [jev-exploration ledger](https://github.com/SamuelSacco/jev-exploration) (Samuel Sacco) tracks claims about Jev and re-analyses other people's benchmarks; the numbers below are what those repositories state as of 2026-09-19:
 
-- [jev-spam-eval](https://github.com/bitnovus/jev-spam-eval) (19,528 real emails): extremes excellent, but the reliability curve crosses over near 0.6 — overstating low probabilities, understating high ones.
-- [jev-phishing-bench](https://github.com/anisselbd/jev-phishing-bench) (2,000 emails): ECE 0.154 at 62.6% accuracy, overconfident in every bin; confidence ≥ 0.9 bought a 73.9% hit rate.
-- jev-exploration's own difficulty-gradient set (800 items, contamination-free): one miscalibration curve roughly invariant to difficulty, 2.1–2.5× the noise floor even at 97.5% accuracy, compressed toward the middle; because that error is *under*confident at the top, thresholding at 0.9 was safe there.
+- [jev-spam-eval](https://github.com/bitnovus/jev-spam-eval): ~9.9k real emails (5,733 ham/spam/phishing + 3,300 fresh + 853 recent phishing), 98.6% accuracy with context enrichment and no task-specific fitting. It does not report ECE; jev-exploration's re-analysis of it describes a reliability curve that overstates low probabilities and understates high ones.
+- [jev-phishing-bench](https://github.com/anisselbd/jev-phishing-bench): 2,000 emails, Jev 62.6% [60.5, 64.7], ECE 0.154 (10 bins) against Claude Haiku 4.5's 0.097.
+- jev-exploration's own 800-item difficulty-gradient set (contamination-free): ECE 2.1–2.5× its noise floor across all four difficulty tiers, with error concentrated in the middle of the range; p ≥ 0.9 gave a 1.000 hit rate in every tier at 21.5–32.5% coverage, so thresholding at 0.9 was safe there. Its recommendation: treat the output as a monotone score, not a probability, and calibrate locally.
 
 Those studies all use boolean (Noul) questions on tasks whose labels are recoverable from the text. This repo adds two things:
 
