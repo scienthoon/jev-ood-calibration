@@ -1,16 +1,13 @@
 """
-jevlocal.eval_dump — 예측 덤프 JSONL 에서 지표 계산. 모델과 무관하다.
+scripts/eval_dump.py — accuracy and calibration metrics from a prediction dump. Model-agnostic.
 
-v0(eval_logprob --dump), 결정 헤드(eval --dump), Jev(scripts/jev_eval.mjs) 의 덤프를
-전부 같은 형식으로 받아 같은 지표를 낸다. 그래서 세 모델을 한 표에 놓을 수 있다.
-
-덤프 레코드:
+Dump record (one JSON per line):
   {"type", "option_keys", "probs", "target", "pred", "gold", "source"?, "confidence"?, "error"?}
-  ("error" 가 있는 행은 제외하고 개수만 보고한다)
+  Rows with "error" are excluded and only counted.
 
-    python -m jevlocal.eval_dump --dump logs/jev_csqa.jsonl
-    python -m jevlocal.eval_dump --dump logs/jev_csqa.jsonl --fit-temperature      # 과신 정도 진단
-    python -m jevlocal.eval_dump --dump logs/jev_csqa.jsonl --confidence-reliability  # TypeSafe confidence 필드 자체의 캘리브레이션
+    python -m scripts.eval_dump --dump results/jev_synth.jsonl
+    python -m scripts.eval_dump --dump results/jev_synth.jsonl --fit-temperature          # sign/size of miscalibration
+    python -m scripts.eval_dump --dump results/jev_synth.jsonl --confidence-reliability   # the provider's own confidence field
 """
 
 from __future__ import annotations
@@ -116,7 +113,7 @@ def main() -> None:
     parser.add_argument("--dump", required=True)
     parser.add_argument("--eps", type=float, default=1e-6)
     parser.add_argument("--fit-temperature", action="store_true")
-    parser.add_argument("--confidence-reliability", action="store_true", help="덤프의 confidence 필드(예: TypeSafe) 자체의 신뢰도 표")
+    parser.add_argument("--confidence-reliability", action="store_true", help="reliability of the dump's own confidence field (e.g. TypeSafe)")
     args = parser.parse_args()
 
     all_rows = load_dump(args.dump)
@@ -150,7 +147,7 @@ def main() -> None:
 
     if args.fit_temperature:
         fitted = fit_temperature(logits, target, mask)
-        print(f"\nrefit temperature: T={fitted:.4f}  (1.0 = 이미 캘리브레이션됨, >1 과신, <1 과소확신)")
+        print(f"\nrefit temperature: T={fitted:.4f}  (1.0 = already calibrated, >1 overconfident, <1 underconfident)")
         print("after:", json.dumps(summarize(logits, target, mask, temperature=fitted)))
         for source in sorted(set(s for s in sources if s)):
             index = torch.tensor([i for i, s in enumerate(sources) if s == source])

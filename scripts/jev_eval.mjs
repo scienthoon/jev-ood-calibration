@@ -1,21 +1,19 @@
 // scripts/jev_eval.mjs
 //
-// jevlocal JSONL 을 Vercel AI Gateway 의 Jev(typesafe-ai/jev-latest) 에 던지고,
-// jevlocal.eval / eval_logprob 의 --dump 와 같은 형식으로 예측 덤프를 쓴다.
-// 그 덤프는 jevlocal.eval_dump 로 정확도·NLL·ECE·reliability 를 계산한다.
+// Sends a JSONL of records to Jev (typesafe-ai/jev) through Vercel AI Gateway, one `evaluate` call per record,
+// and writes a prediction dump in the format scripts/eval_dump.py scores.
 //
-// 준비:
-//   npm init -y && npm i ai@latest
-//   export AI_GATEWAY_API_KEY=...        (Vercel AI Gateway 키)
+// Setup:
+//   npm i ai@latest
+//   export AI_GATEWAY_API_KEY=...        (Vercel AI Gateway key; paid credits needed, the free tier rate-limits this model)
 //
-// 실행:
-//   node scripts/jev_eval.mjs --in data/ho_csqa/val.jsonl --out logs/jev_csqa.jsonl
-//   node scripts/jev_eval.mjs --in data/ho_hs/val.jsonl   --out logs/jev_hs.jsonl --concurrency 8
-//   node scripts/jev_eval.mjs --in data/real/val.jsonl    --out logs/jev_real.jsonl --limit 500
+// Run:
+//   node scripts/jev_eval.mjs --in data/val.jsonl --out results/jev_synth.jsonl --concurrency 8
+//   node scripts/jev_eval.mjs --in data/ho_hs/val.jsonl --out results/jev_hellaswag.jsonl --concurrency 8
 //
-// 입력 레코드 (jevlocal 스키마):
+// Input record:
 //   {"state", "type": "choice"|"score"|"noul", "question", "options"|"levels", "label", "label_probs"?, "source"?}
-// 출력 레코드:
+// Output record:
 //   {"type", "option_keys", "probs", "target", "pred", "gold", "confidence", "source", "usage"}
 
 import fs from 'node:fs';
@@ -30,7 +28,7 @@ function parseArgs(argv) {
   const args = {
     in: null,
     out: null,
-    model: 'typesafe-ai/jev-latest',
+    model: 'typesafe-ai/jev',
     concurrency: 4,
     limit: null,
     zdr: true,

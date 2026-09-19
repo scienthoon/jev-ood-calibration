@@ -10,7 +10,7 @@ amounts, days, and a calm or angry closing line (30% angry; some lines in Korean
   priority (score, 4)   = template base urgency (0-2) + 1 if angry + 1 if tier in {gold, enterprise}, clipped to 0..3
   angry    (noul)       = whether an angry closing line was appended
 5% of labels are randomly corrupted (label_noise) to mimic operational data, so no model can exceed ~95%.
-Records use the jevlocal JSONL schema: {state, type, question, options|levels, label}.
+Record schema: {state, type, question, options|levels, label}.
 """
 
 from __future__ import annotations

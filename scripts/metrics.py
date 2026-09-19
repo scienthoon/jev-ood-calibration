@@ -1,8 +1,6 @@
 """
-jevlocal.metrics — 결정 모델의 정확도와 캘리브레이션 지표.
-
-모든 함수는 (N, K) 로짓 텐서와 (N, K) 타겟 확률 텐서, 그리고 (N, K) 유효 마스크를 받는다.
-패딩된 선택지는 mask=False 이고 로짓은 -inf 로 채워져 있다고 가정한다.
+scripts/metrics.py — accuracy and calibration metrics on (N, K) option logits / target probabilities / validity masks.
+Padded options have mask=False and logits=-inf.
 """
 
 from __future__ import annotations

@@ -67,7 +67,7 @@ Those studies all use boolean (Noul) questions on tasks whose labels are recover
 
 ## The synthetic task
 
-`data/val.jsonl` — 900 records, jevlocal JSONL schema (`state`, `type`, `question`, `options`/`levels`, `label`). `data/generate.py` regenerates the set; change `--seed` to get a fresh, guaranteed-uncontaminated test set.
+`data/val.jsonl` — 900 records, JSONL schema (`state`, `type`, `question`, `options`/`levels`, `label`). `data/generate.py` regenerates the set; change `--seed` to get a fresh, guaranteed-uncontaminated test set.
 
 Each ticket is `{channel, customer_tier, subject, body}`, drawn from 20 templates across four queues, with random order numbers, amounts, days, and a calm or angry closing line (30% angry; some lines in Korean). Labels:
 
