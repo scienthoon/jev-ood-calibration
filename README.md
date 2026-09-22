@@ -35,6 +35,28 @@ These accuracies are far above what a 3–8B model scores zero-shot on the same 
 
 ECE noise floor for the 900-item set (perfectly calibrated model, same predicted distributions, 200 re-samplings): 0.024. Measured 0.107 is 4.4× the floor.
 
+> **Correction (2026-09-22): the Refit T column above depends on how exact zeros are floored, and the Choice figure was mostly an artefact of that choice.**
+> Jev's probabilities are quantised to 0.01 and Choice/Score use the endpoints freely, so a correct answer sometimes receives exactly 0. A temperature cannot
+> rescue such an item, and `eval_dump` floors the log at 1e-6, which charges it −log(1e-6) = 13.8 nats. On this set 4.3% of Choice items and 2.0% of Score items
+> put exactly 0 on the correct answer, and those few items carry the fit. Refitting with the floor at half a grid step (0.005), where a quantised 0 means
+> "below 0.005" rather than "impossible":
+>
+> | type | exact 0 | exact 1 | 0 on correct | T @1e-6 | **T @0.005** | T @0.01 | T @1e-6 excluding 0-on-correct |
+> |---|---|---|---|---|---|---|---|
+> | choice | 69.8% | 20.0% | 4.3% | 3.29 | **1.30** | 1.14 | 1.31 |
+> | score | 30.5% | 0.0% | 2.0% | 3.40 | **1.92** | 1.81 | 2.43 |
+> | noul | 0.0% | 0.0% | 0.0% | 0.66 | **0.66** | 0.66 | 0.66 |
+>
+> The direction survives — boolean below 1, choice and score above it — but the size does not. Choice is barely overconfident once the endpoints are handled
+> (1.30, and 1.31 if the zero-on-correct items are simply dropped), not the 3.29 printed above. Score stays clearly overconfident at 1.92, which is the
+> unknowable-label task. Noul is unchanged because it has no endpoints at all.
+>
+> **Accuracy, NLL@1, Brier and ECE are unaffected** — none of them take a log of a floored zero in a way a single item can dominate; ECE for Choice moves only
+> 0.084 → 0.072. Only the refit-T column moves. Reproduce with `python scripts/endpoint_refit.py --dump results/jev_synth.jsonl`.
+>
+> Thanks to [@SamuelSacco](https://github.com/SamuelSacco/jev-exploration/issues/10), who showed from direct `api.typesafe.ai` responses that the 0.01
+> quantisation is Jev's own rather than the Gateway's, and published the per-primitive endpoint rates that prompted this recheck.
+
 The priority label is defined by a rule that is **not in the text** (see below). No zero-shot model can recover it; 44.7% is chance plus common sense. The question is whether Jev's probabilities *reflect* that it cannot know. They do not: the chosen level carries 0.74 probability on average, and the temperature needed to make the probabilities honest is 3.4.
 
 TypeSafe also returns a separate `confidence` statistic. Read as a probability of being correct, its ECE is 0.035 on OpenBookQA, 0.078 on HellaSwag (worse than the max-probability), and 0.18 on the synthetic set.
@@ -50,7 +72,7 @@ This is not the first independent calibration test. The [jev-exploration ledger]
 Those studies all use boolean (Noul) questions on tasks whose labels are recoverable from the text. This repo adds two things:
 
 1. **An unknowable task.** The label is a policy, not a property of the text. This tests "does the model know it doesn't know", which is the case the human-routing use case actually depends on.
-2. **Sign by question type.** Our boolean result (T 0.66, underconfident) independently reproduces the direction found in the difficulty-gradient set. Choice and Score go the other way (T 3.3–3.4, overconfident). Whether a fixed threshold is safe therefore depends on the question type, not just on the task — for Choice and Score it is not.
+2. **Sign by question type — direction only.** Our boolean result (T 0.66, underconfident) independently reproduces the direction found in the difficulty-gradient set, and Choice and Score go the other way (T 1.30 and 1.92 with the endpoint floor at half a grid step; 3.29 and 3.40 with a 1e-6 floor, which the correction above shows is dominated by a handful of zero-on-correct items). Read the sign, not the magnitude. Note also that Noul is the one primitive whose probabilities are clamped away from 0 and 1, so it is the only type where a refit temperature is cleanly defined — a caveat on this comparison that cuts against our own framing.
 
 ## What Jev does well
 
